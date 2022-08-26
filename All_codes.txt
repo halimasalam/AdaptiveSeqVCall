@@ -1,0 +1,205 @@
+#QC with Nanoplot
+NanoPlot --summary ~/data/ml_032/COSMIC_Cancer_Panel_Flushed/20200125_1105_X4_FAL73976_863d3415/sequencing_summary_FAL73976_3461bedd.txt -t 2 --outdir /home/mbxha18/project_CPF/Nanoplot_CPF
+
+#Mapping to GRCh38 human reference genome
+minimap2 -ax map-ont -t 8 /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna ~/data/ml_032/COSMIC_Cancer_Panel_Flushed/20200125_1105_X4_FAL73976_863d3415/fastq_*/*.fastq.gz | samtools sort -o CPmerged -T reads.tmp
+
+#sort bamfile
+samtools index ml32_CPF.sorted.bam
+
+#Subset target regions present in the bed file from the merged bam file
+samtools view -b -L /home/mbxha18/data/cancer_panel/CancerPanelAll.bed CPmerged > /home/mbxha18/project_CPF/mergedCP/mergedCP_target_region/CPmerged-subset.bam 
+To index subset BAM file
+%samtools index CPmerged-subset.bam 
+
+#To get the coverage of target and non target region in total mapped file,
+#use bedtools to extract non targeget regions into a bed file
+#first index the Reference Genome file and extract the first three columns
+samtools faidx GRCh38.p14_canonical.fna
+cut -f1,2 GRCh38.p14_canonical.fna.fai > GRCh38.p14_canonical.fna2.fai
+#then sort the CancerPanelAll bed file according to the sorting of the reference file
+bedtools sort -g /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna2.fai -i /home/mbxha18/data/CancerPanelAll.bed > /home/mbxha18/data/CancerPanelAll.sort.bed
+#Run bedtools to extract non target regions to bed file
+bedtools complement -i /home/mbxha18/data/CancerPanelAll.sort.bed -g /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna2.fai > /home/mbxha18/data/CancerPanelAll.non_target.bed
+
+
+Run mosdepth to get coverage
+mosdepth --by /home/mbxha18/data/cancer_panel/CancerPanelAll.bed mergedCP-total.target /home/mbxha18/project_CPF/mergedCP/mergedCP_minimap2/CPmerged.bam
+mosdepth --by /home/mbxha18/data/cancer_panel/CancerPanelAll.non_target.bed mergedCP-total.nontarget /home/mbxha18/project_CPF/mergedCP/mergedCP_minimap2/CPmerged.bam
+
+To get the coverage of target and non target region in subset mapped file, 
+%mosdepth --by /home/mbxha18/data/cancer_panel/CancerPanelAll.bed mergedCP-subset.target /home/mbxha18/project_CPF/mergedCP/mergedCP_target_region/CPmerged-subset.bam
+%mosdepth --by /home/mbxha18/data/cancer_panel/CancerPanelAll.non_target.bed mergedCP-subset.nontarget /home/mbxha18/project_CPF/mergedCP/mergedCP_target_region/CPmerged-subset.bam]
+
+
+#To extract read_id list of subset regions, so as to extract their corresponding fast5 for rebasecalling
+samtools view CPmerged-subset.bam | cut -f1 > CPmergedtarget_fastq.txt 
+
+#To extract the corresponding fast5 files of the subset fastq files using ont-fast5-api
+fast5_subset -i ~/project_CPF/mergedCP -s ~/project_CPF/mergedCP/mergedCP_target_region/mergedCP_target_fast5 -l ~/project_CPF/mergedCP/mergedCP_target_region/CPmergedtarget_fastq.txt -r -c vbz
+
+#To rebasecall these fast5s with guppy super accuracy 
+guppy_basecaller_supervisor --num_clients 32 -i mcp_target_fast5 -s mcp_target_fastq -c dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_sup.cfg --port ipc:///tmp/.guppy/5555 --bam_out -a /data/projects/halima/GRCh38.p14_canonical.mmi --compress_fastq
+
+#map again with fastq
+minimap2 -ax map-ont -t 8 /home/mbxha18/data/GENOME/GRCh38.p14_canonical.mmi ~/project_CPF/mergedCP/mergedCP_target_region/mergedCP_target_fastq/pass/*.fastq.gz| samtools sort -o minimap2_mergedCP_target.sorted.bam -T reads.tmp 
+%samtools index minimap2_mergedCP_target.sorted.bam
+
+#Extract Methylation with modbam2bed
+modbam2bed -e -m 5mC  --cpg -t 4 /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna ~/project_CPF/mergedCP/mergedCP_target_region/merged_guppy.bam > 5mC_ml32merged_bedmethyl
+
+modbam2bed -e -m 5hmC --cpg -t 4 /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna ~/project_CPF/mergedCP/mergedCP_target_region/merged_guppy.bam > 5hmC_ml32merged_bedmethyl
+
+#SV calling with sniffles
+sniffles --input ~/mergedCP/mcp_minimap2_tg/minimap2_mcp_tg.sorted.bam --reference /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna --vcf sniffles_SV.vcf
+
+#SV calling with cuteSV
+cuteSV ~/mergedCP/mcp_minimap2_tg/minimap2_mcp_tg.sorted.bam /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna ~/mergedCP/variant_calling/cutesv/cutesv_tg.vcf ~/mergedCP/variant_calling/cutesv #for minimapalignments
+
+#Using Structural variant Annotation and analysis (SvAnna)to annotate and prioritize SVs
+#Download the zipped file (svanna-cli-1.0.1-distribution.zip) to the svanna directory and unzip. It written in java
+conda create -n java11 openjdk=11
+conda activate java11
+
+#Also download the svanna database file in the svanna-cli-1.0.1.jar directory
+curl --output 2204_hg38.svanna.zip https://storage.googleapis.com/svanna/2204_hg38.svanna.zip
+
+#Run svanna for cutesv from svanna-cli-1.0.1 directory
+java -jar svanna-cli-1.0.1.jar prioritize -d ~/mergedCP/variant_calling/svanna/svanna-cli-1.0.1 --vcf ~/mergedCP/variant_calling/cutesv/cutesv_tg.vcf --out-dir ~/mergedCP/variant_calling/cutesv/svanna_cutesv_tg --uncompressed-output --output-format html,vcf,csv
+
+#Run svanna for sniffles from svanna-cli-1.0.1 directory
+java -jar svanna-cli-1.0.1.jar prioritize -d ~/mergedCP/variant_calling/svanna/svanna-cli-1.0.1 --vcf ~/mergedCP/variant_calling/sniffles/sniffles_SV.vcf --out-dir ~/mergedCP/variant_calling/sniffles/svanna_sniffles_tg --uncompressed-output --output-format html,vcf,csv
+
+
+#Run Claire3
+conda create -n clair3 -c bioconda clair3 python=3.6.10 -y
+MODEL_NAME="r941_prom_sup_g5014" 
+OUTPUT_DIR="/home/mbxha18/mergedCP/variant_calling/clair3_sac"
+CONDA_PREFIX="/home/mbxha18/miniconda3/pkgs/clair3-0.1.11-py36hb9dc472_6" 
+THREADS="8"
+ 
+run_clair3.sh --bam_fn=/home/mbxha18/mergedCP/mcp_minimap2_tg/minimap2_mcp_tg.sorted.bam --ref_fn=/home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna --threads=8 --platform="ont" --model_path="$CONDA_PREFIX/bin/models/$MODEL_NAME" --output=$OUTPUT_DIR --sample_name="ml32" 
+
+#Comparison of SNP
+#Extract snp at target region and high confidence region in GIAB
+bedtools intersect -a /home/mbxha18/mergedCP/variant_calling/GIAB_NA12878/HG001_GRCh38_1_22_v4.2.1_benchmark.bed -b /home/mbxha18/data/cancer_panel/CancerPanelAll.bed > GIAB_CPanel.bed
+
+#Filter both GIAB and Clair VCF files with the GIAB_CPanel bedfile
+bcftools view -R ~/data/cancer_panel/GIAB_CPanel.bed /home/mbxha18/mergedCP/variant_calling/clair3_sac/clair3_sac.vcf.gz > /home/mbxha18/mergedCP/variant_calling/clair3_sac/clair3_sac_HC.vcf   #(HC = High Confidence)
+
+bcftools view -R ~/data/cancer_panel/GIAB_CPanel.bed ~/mergedCP/variant_calling/GIAB_NA12878/HG001_GRCh38_1_22_v4.2.1_benchmark.vcf.gz > ~/mergedCP/variant_calling/GIAB_NA12878/GIAB_HC.vcf
+
+#sort,zip and index both files
+bcftools sort GIAB_HC.vcf -o GIAB_HCs.vcf
+bgzip -c GIAB_HCs.vcf > GIAB_HC.vcf.gz
+tabix -p vcf GIAB_HC.vcf.gz
+
+bcftools sort clair3_sac_HC.vcf -o clair3_sac_HCs.vcf 
+bgzip -c clair3_sac_HCs.vcf > clair3_sac_HC.vcf.gz
+tabix -p vcf clair3_sac_HC.vcf.gz
+
+#Use BCFtools to find intersection and complement
+bcftools isec -p ~/mergedCP/variant_calling/bcftools_sac ~/mergedCP/variant_calling/GIAB_NA12878/GIAB_HC.vcf.gz /home/mbxha18/mergedCP/variant_calling/clair3_sac/clair3_sac_HC.vcf.gz
+
+#Count number of snps in each file
+grep -v '#' 0000.vcf | wc -l
+
+#Use hap.py to query filtered claire_HC vcf against the standard GIAB vcf
+%conda create -n hap.py python=2.7
+conda install -c bioconda hap.py
+conda activate hap.py
+hap.py ~/mergedCP/variant_calling/GIAB_NA12878/GIAB_HC.vcf.gz ~/mergedCP/variant_calling/clair3_sac/clair3_sac_HC.vcf.gz -f ~/data/cancer_panel/GIAB_CPanel.bed -o hap.py_sac -r /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna
+(hap.py compared the the clair against the specific SNP in GIAB)
+
+
+#Exract positions in GIAB where variants are not called in clair
+~/miniconda3/pkgs/gatk4-4.2.6.1-py36hdfd78af_1/share/gatk4-4.2.6.1-1/gatk VariantsToTable -V /home/mbxha18/mergedCP/variant_calling/bcftools_sac/0000.vcf -F CHROM -F POS -O ~/mergedCP/variant_calling/gatktables/GIAB_chrom.csv
+
+#Then create a bed file with this table ((copy the position, add 1 and paste so there is a start and end position, name file GIAB_ex_Clair3.bed)
+#Extract those depth at those positions in guppy bam file(in the ~/mergedCP/variant_calling/gatktables/mosdepth directory)(checked this positions in bam file and saw that it was right)
+
+mosdepth --by ~/mergedCP/variant_calling/gatktables/mosdepth/GIAB_ex_Clair3.bed mosdepth_GIAB_Clair_DP /home/mbxha18/mergedCP/mcp_tg_region/mcp_guppy.bam
+mv mosdepth_GIAB_Clair_DP.regions.bed GIAB.table
+
+~/miniconda3/pkgs/gatk4-4.2.6.1-py36hdfd78af_1/share/gatk4-4.2.6.1-1/gatk VariantsToTable -V /home/mbxha18/mergedCP/variant_calling/bcftools_sac/0001.vcf -F CHROM -F POS -GF DP --show-filtered -O ~/mergedCP/variant_calling/gatktables/clair3.table
+
+~/miniconda3/pkgs/gatk4-4.2.6.1-py36hdfd78af_1/share/gatk4-4.2.6.1-1/gatk VariantsToTable -V /home/mbxha18/mergedCP/variant_calling/bcftools_sac/0003.vcf -F CHROM -F POS -GF DP --show-filtered -O ~/mergedCP/variant_calling/gatktables/Both.table
+
+
+#use modbamtools
+conda create modbamtools_env.yml
+name: modbamtools
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.12
+  - pip
+  - pip:
+    - modbamtools==0.4.6
+conda env create -f modbamtools_env.yml
+conda activate modbamtools
+
+#modbamtools for BRCA1-ml32
+modbamtools plot -r chr17:43044295-43125483 --out . --prefix BRCA1 --track-titles BRCA1 --fmt html --gtf /home/mbxha18/mergedCP/methylation_mcp/modbamtools/modbamtools_tutorial_files/gencode.v38.annotation.sorted.gtf.gz  /home/mbxha18/mergedCP/mcp_tg_region/mcp_guppy.bam 
+
+#use Longphase
+Install Longphase
+wget https://github.com/twolinin/longphase/releases/download/v1.2/longphase_linux-x64.tar.xz
+tar -xJf longphase_linux-x64.tar.xz
+
+./longphase_linux-x64 phase \
+-s /home/mbxha18/mergedCP/variant_calling/clair3_sac/clair3_sac_HC.vcf \
+-b /home/mbxha18/mergedCP/mcp_tg_region/mcp_guppy.bam \
+-r /home/mbxha18/data/GENOME/GRCh38.p14_canonical.fna \
+-t 8 \
+-o phased_ml32 \
+--ont 
+
+./longphase_linux-x64 haplotag \
+-s phased_ml32.vcf \
+-b /home/mbxha18/mergedCP/mcp_tg_region/mcp_guppy.bam \
+-t 8 \
+-o tagged_bam_ml32
+
+Run survivor in ~/mergedCP/variant_calling/survivor/SURVIVOR-master/Debug (for sniffles)
+# list all files to use
+ls ~/data/SV_data/NA12878_SV_CP.vcf ~/mergedCP/variant_calling/sniffles/sniffles_SV.vcf /home/mbxha18/data/whole_genome/REF_mmap2_sniffles.vcf > sample_files
+
+#Run survivor
+./SURVIVOR merge sample_files 1000 0 1 0 0 0 sample_merged_sniffles.vcf
+
+#Plotting the comparison
+#Extract the overlap information like this:
+
+perl -ne 'print "$1\n" if /SUPP_VEC=([^,;]+)/' sample_merged_sniffles.vcf | sed -e 's/\(.\)/\1 /g' > sample_merged_overlapp.txt
+
+#This will extract the string from the support vector representing 0 or 1 depending on if a sample/ input VCF file supports an SV or not. The sed command will add a space between every character, which is needed for R.
+
+#Transfer the file to local desktop
+
+#Next, IThis run in R
+
+install.packages("VennDiagram")
+t=read.table("/Users/DELL/Desktop/THESIS/sample_merged_overlapp.txt",header=F)
+library(VennDiagram)
+venn.diagram(list(TRUTH=which(t[,1]==1), AS=which(t[,2]==1), REF=which(t[,3]==1)) , fill = c("gray", "orange" ,"blue") , alpha = c(0.5, 0.5, 0.5), cex = 2, lty =2, filename = "my_sample_overlapp.tiff");
+
+
+#Annotate barcode samples with annovar
+#Download annovar and uzip
+wget http://www.openbioinformatics.org/annovar/download/0wgxR2rIVP/annovar.latest.tar.g
+wget http://www.openbioinformatics.org/annovar/download/0wgxR2rIVP/annovar.latest.tar.gz
+gunzip annovar.latest.tar.gz
+tar -xf annovar.latest.tar
+
+#Download required databases
+perl annotate_variation.pl -buildver hg19 -downdb -webfrom annovar refGene humandb/
+perl annotate_variation.pl -buildver hg19 -downdb -webfrom annovar exac03 humandb/
+perl annotate_variation.pl -buildver hg19 -downdb -webfrom annovar avsnp147 humandb/
+perl annotate_variation.pl -buildver hg19 -downdb -webfrom annovar dbnsfp30a humandb/
+
+perl table_annovar.pl example/ex1.avinput humandb/ -buildver hg19 -out myanno -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f -nastring . -csvout -polish -xref example/gene_xref.txt
+ 
+for bc in 2 3 4; do echo ${bc}; perl convert2annovar.pl -format vcf4 ../../human/final_bams_meth/clair3_barcode0${bc}/full_alignment.vcf.gz > final_bams_meth_barcode0${bc}.avinput; perl table_annovar.pl final_bams_meth_barcode0${bc}.avinput humandb/ -buildver hg38 -out anno_final_bams_meth_barcode0${bc} -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a,clinvar_20220320 -operation g,r,f,f,f,f -nastring . -csvout -polish; done
