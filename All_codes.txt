@@ -13,7 +13,7 @@ To index subset BAM file
 %samtools index CPmerged-subset.bam 
 
 #To get the coverage of target and non target region in total mapped file,
-#use bedtools to extract non targeget regions into a bed file
+#use bedtools to extract non target regions into a bed file
 #first index the Reference Genome file and extract the first three columns
 samtools faidx GRCh38.p14_canonical.fna
 cut -f1,2 GRCh38.p14_canonical.fna.fai > GRCh38.p14_canonical.fna2.fai
