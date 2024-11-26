@@ -8,9 +8,9 @@ The pipeline is implemented using Nextflow and can be run inside a Docker contai
 ## **Table of Content**
 1. [Project Overview](#project-overview)
 2. [Installation](#installation)
-   1. [Install Nextflow](#install-nextflow)
-   2. [Install Docker](#install-docker)
-   3. [Build Docker Image](#build-docker-image)
+   1. [1. Install Nextflow](#install-nextflow)
+   2. [2. Install Docker](#install-docker)
+   3. [3. Build Docker Image](#build-docker-image)
 3. [Running the Pipeline](#running-the-pipeline)
    1. [With Docker](#with-docker)
    2. [Without Docker](#without-docker)
@@ -93,7 +93,7 @@ nextflow run main.nf
 ```
 
 
-## **Required Input Files**
+## **Input Files**
 The following input files should be provided:
 
 1. **FASTQ Files**: These can be in any directory, but must be named `.fastq.gz` or `.fq.gz`.
@@ -111,3 +111,16 @@ The following files are outputted:
 3. **Subset BAM**: Subsetted BAM file based on target regions (`mapped.bam`).
 3. **Coverage Statistics**:Coverage statistics for target and non-target regions (mosdepth output).
 5. **Methylation Calls**: Methylation analysis results in `*.methylation_calls.txt` format.
+
+
+## **Dependencies** 
+The pipeline uses the following tools and libraries (to be updated):
+
+- **Nextflow:** For workflow management.
+- **Minimap2:** For mapping reads to the reference genome.
+- **SAMtools:** For manipulating BAM files.
+- **Mosdepth:** For calculating coverage.
+- **Sniffles:** For variant calling (structural variants).
+- **NanoPlot:** For quality control of sequencing data.
+- **Bedtools:** For working with BED files.
+These tools are automatically installed via Conda and Docker when using the provided Dockerfile.
