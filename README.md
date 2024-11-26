@@ -1,12 +1,24 @@
-### **Bioinformatics Project**
-A PROJECT ON COMPARISON OF VARIANT CALLING IN NANOPORE ADAPTIVE SAMPLING SEQUENCING TO WHOLE GENOME SEQUENCING (On-going).
+# **Bioinformatics Project** 
+**A PROJECT ON COMPARISON OF VARIANT CALLING IN NANOPORE ADAPTIVE SAMPLING SEQUENCING TO WHOLE GENOME SEQUENCING (On-going).**
 
 This project provides a bioinformatics pipeline designed to analyze and compare sequencing data for the NA12878 reference genome using both standard WGS and adaptive sampling. 
 
 The pipeline is implemented using Nextflow and can be run inside a Docker container, simplifying dependency management and ensuring reproducibility. Each `.nf` file contains one or more processes, and these processes are used in the `main.nf` to create the final pipeline.
 
 ## **Table of Content**
-
+1. [Project Overview](#project-overview)
+2. [Installation](#installation)
+   1. [Install Nextflow](#install-nextflow)
+   2. [Install Docker](#install-docker)
+   3. [Build Docker Image](#build-docker-image)
+3. [Running the Pipeline](#running-the-pipeline)
+   1. [With Docker](#with-docker)
+   2. [Without Docker](#without-docker)
+4. [Pipeline Overview](#pipeline-overview)
+5. [Input Files](#input-files)
+6. [Output Files](#output-files)
+7. [Dependencies](#dependencies)
+8. [License](#license)
 
 ## **Project  Overview**
 This pipeline is designed to process **Whole Genome Sequencing (WGS)** data and compare it with **Adaptive Sampling (ONT)** sequencing. It performs the following tasks:
@@ -24,13 +36,13 @@ The pipeline takes raw FASTQ files, a reference genome, and a BED file with targ
 
 
 ## **Installation**
-# **1. Install Nextflow**
+### **1. Install Nextflow**
 To install Nextflow, follow the official Nextflow installation guide or use the following commands for Linux or macOS:
 ```bash
 curl -s https://get.nextflow.io | bash
 sudo mv nextflow /usr/local/bin
 ```
-# **2. Install Docker**
+### **2. Install Docker**
 If you don’t already have Docker installed, you can install it by following the official guide:
 Docker Installation Guide
 
@@ -41,7 +53,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io
 ```
 For other systems, please refer to the Docker installation guide above.
 
-# **3. Build Docker Image**
+### **3. Build Docker Image**
 This project comes with a Dockerfile that encapsulates all the dependencies required to run the Nextflow pipeline.
 To build the Docker image:
 ```bash
@@ -51,33 +63,33 @@ This will create a Docker image named bio-pipeline containing the necessary envi
 
 
 ## **Running the Pipeline**
-# **1. With Docker**
+### **1. With Docker**
 You can run the pipeline inside the Docker container, which ensures all dependencies are installed and configured properly.
-**Run the Docker container:**
-```bash
-docker build -t bio-pipeline .
-```
-Replace /path/to/your/data with the actual path where your data files are stored on your host system. This will mount the data directory inside the container at /app/data.
+    **1. Run the Docker container:**
+    ```bash
+    docker run -v /path/to/your/data:/app/data bio-pipeline
+    ```
+    Replace /path/to/your/data with the actual path where your data files are stored on your host system. This will mount the data directory inside the container at /app/data.
 
-# **Access the container interactively (optional)**
-**If you need to run commands interactively inside the container:**
-```bash
-docker run -it -v /path/to/your/data:/app/data bio-pipeline /bin/bash
-```
-This will give you a shell prompt inside the container where you can manually execute commands if needed.
+    ### **2. Access the container interactively (optional)**
+    **If you need to run commands interactively inside the container:**
+    ```bash
+    docker run -it -v /path/to/your/data:/app/data bio-pipeline /bin/bash
+    ```
+    This will give you a shell prompt inside the container where you can manually execute commands if needed.
 
-# **2. Without Docker**
+### **2. Without Docker**
 If you don't want to use Docker, you can manually install all dependencies in your environment, but using Docker simplifies this process.
-**Install dependencies manually:**
-- Nextflow: Install via Nextflow installation guide.
-- Conda: Install Conda via the Conda website.
-- Other dependencies: Install FastQC, BWA, Samtools, Minimap2, Sniffles, Mosdepth, NanoPlot, and others from either Conda or the appropriate package manager for your OS.
+    **1. Install dependencies manually:**
+    - Nextflow: Install via Nextflow installation guide.
+    - Conda: Install Conda via the Conda website.
+    - Other dependencies: Install FastQC, BWA, Samtools, Minimap2, Sniffles, Mosdepth, NanoPlot, and others from either Conda or the appropriate package manager for your OS.
 
-**Run the pipeline:**
-After installing dependencies, you can run the pipeline with:
-```bash
-nextflow run main.nf
-```
+    **2. Run the pipeline:**
+    After installing dependencies, you can run the pipeline with:
+    ```bash
+    nextflow run main.nf
+    ```
 
 
 ## **Required Input Files**
