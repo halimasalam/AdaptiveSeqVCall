@@ -14,11 +14,10 @@ The pipeline is implemented using Nextflow and can be run inside a Docker contai
 3. [Running the Pipeline](#running-the-pipeline)
    1. [With Docker](#with-docker)
    2. [Without Docker](#without-docker)
-4. [Pipeline Overview](#pipeline-overview)
-5. [Input Files](#input-files)
-6. [Output Files](#output-files)
-7. [Dependencies](#dependencies)
-8. [License](#license)
+4. [Input Files](#input-files)
+5. [Output Files](#output-files)
+6. [Dependencies](#dependencies)
+
 
 ## **Project  Overview**
 This pipeline is designed to process **Whole Genome Sequencing (WGS)** data and compare it with **Adaptive Sampling (ONT)** sequencing. It performs the following tasks:
@@ -65,13 +64,15 @@ This will create a Docker image named bio-pipeline containing the necessary envi
 ## **Running the Pipeline**
 ### **1. With Docker**
 You can run the pipeline inside the Docker container, which ensures all dependencies are installed and configured properly.
-**1. Run the Docker container:**
+
+**a. Run the Docker container:**
 ```bash
 docker run -v /path/to/your/data:/app/data bio-pipeline
 ```
 Replace /path/to/your/data with the actual path where your data files are stored on your host system. This will mount the data directory inside the container at /app/data.
 
-### **2. Access the container interactively (optional)**
+### **b. Access the container interactively (optional)**
+
 **If you need to run commands interactively inside the container:**
 ```bash
 docker run -it -v /path/to/your/data:/app/data bio-pipeline /bin/bash
@@ -80,16 +81,16 @@ This will give you a shell prompt inside the container where you can manually ex
 
 ### **2. Without Docker**
 If you don't want to use Docker, you can manually install all dependencies in your environment, but using Docker simplifies this process.
-    **1. Install dependencies manually:**
-    - Nextflow: Install via Nextflow installation guide.
-    - Conda: Install Conda via the Conda website.
-    - Other dependencies: Install FastQC, BWA, Samtools, Minimap2, Sniffles, Mosdepth, NanoPlot, and others from either Conda or the appropriate package manager for your OS.
+**a. Install dependencies manually:**
+- Nextflow: Install via Nextflow installation guide.
+- Conda: Install Conda via the Conda website.
+- Other dependencies: Install FastQC, BWA, Samtools, Minimap2, Sniffles, Mosdepth, NanoPlot, and others from either Conda or the appropriate package manager for your OS.
 
-    **2. Run the pipeline:**
-    After installing dependencies, you can run the pipeline with:
-    ```bash
-    nextflow run main.nf
-    ```
+**b. Run the pipeline:**
+After installing dependencies, you can run the pipeline with:
+```bash
+nextflow run main.nf
+```
 
 
 ## **Required Input Files**
