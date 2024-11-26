@@ -65,18 +65,18 @@ This will create a Docker image named bio-pipeline containing the necessary envi
 ## **Running the Pipeline**
 ### **1. With Docker**
 You can run the pipeline inside the Docker container, which ensures all dependencies are installed and configured properly.
-    **1. Run the Docker container:**
-    ```bash
-    docker run -v /path/to/your/data:/app/data bio-pipeline
-    ```
-    Replace /path/to/your/data with the actual path where your data files are stored on your host system. This will mount the data directory inside the container at /app/data.
+**1. Run the Docker container:**
+```bash
+docker run -v /path/to/your/data:/app/data bio-pipeline
+```
+Replace /path/to/your/data with the actual path where your data files are stored on your host system. This will mount the data directory inside the container at /app/data.
 
-    ### **2. Access the container interactively (optional)**
-    **If you need to run commands interactively inside the container:**
-    ```bash
-    docker run -it -v /path/to/your/data:/app/data bio-pipeline /bin/bash
-    ```
-    This will give you a shell prompt inside the container where you can manually execute commands if needed.
+### **2. Access the container interactively (optional)**
+**If you need to run commands interactively inside the container:**
+```bash
+docker run -it -v /path/to/your/data:/app/data bio-pipeline /bin/bash
+```
+This will give you a shell prompt inside the container where you can manually execute commands if needed.
 
 ### **2. Without Docker**
 If you don't want to use Docker, you can manually install all dependencies in your environment, but using Docker simplifies this process.
