@@ -8,9 +8,9 @@ The pipeline is implemented using Nextflow and can be run inside a Docker contai
 ## **Table of Content**
 1. [Project Overview](#project-overview)
 2. [Installation](#installation)
-   1. [1. Install Nextflow](#install-nextflow)
-   2. [2. Install Docker](#install-docker)
-   3. [3. Build Docker Image](#build-docker-image)
+   1. [Install Nextflow](#install-nextflow)
+   2. [Install Docker](#install-docker)
+   3. [Build Docker Image](#build-docker-image)
 3. [Running the Pipeline](#running-the-pipeline)
    1. [With Docker](#with-docker)
    2. [Without Docker](#without-docker)
