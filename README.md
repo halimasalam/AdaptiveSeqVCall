@@ -1,7 +1,14 @@
-# **Bioinformatics Project**
-A PROJECT ON COMPARISON OF VARIANT CALLING IN NANOPORE ADAPTIVE SAMPLING SEQUENCING TO WHOLE GENOME SEQUENCING (On-going)
+### **Bioinformatics Project**
+A PROJECT ON COMPARISON OF VARIANT CALLING IN NANOPORE ADAPTIVE SAMPLING SEQUENCING TO WHOLE GENOME SEQUENCING (On-going).
 
-## **1. Overview**
+This project provides a bioinformatics pipeline designed to analyze and compare sequencing data for the NA12878 reference genome using both standard WGS and adaptive sampling. 
+
+The pipeline is implemented using Nextflow and can be run inside a Docker container, simplifying dependency management and ensuring reproducibility. Each `.nf` file contains one or more processes, and these processes are used in the `main.nf` to create the final pipeline.
+
+## **Table of Content**
+
+
+## **Project  Overview**
 This pipeline is designed to process **Whole Genome Sequencing (WGS)** data and compare it with **Adaptive Sampling (ONT)** sequencing. It performs the following tasks:
 
 - **Quality Control** (QC) using NanoPlot
@@ -15,20 +22,65 @@ This pipeline is designed to process **Whole Genome Sequencing (WGS)** data and 
 
 The pipeline takes raw FASTQ files, a reference genome, and a BED file with target regions as input. It performs all necessary steps to analyze the data and generate results such as **VCF files**, **coverage reports**, and **methylation results**.
 
-## **Pipeline Structure**
 
-The pipeline consists of several processes defined across multiple `.nf` files. These processes are orchestrated in the `main.nf` file, which imports and executes the following:
+## **Installation**
+# **1. Install Nextflow**
+To install Nextflow, follow the official Nextflow installation guide or use the following commands for Linux or macOS:
+```bash
+curl -s https://get.nextflow.io | bash
+sudo mv nextflow /usr/local/bin
+```
+# **2. Install Docker**
+If you don’t already have Docker installed, you can install it by following the official guide:
+Docker Installation Guide
 
-- **`mapping.nf`**: Processes for mapping the reads to the reference genome.
-- **`coverage.nf`**: Processes for calculating the coverage of both target and non-target regions.
-- **`qc.nf`**: Processes for performing quality control using NanoPlot.
-- **`variant_calling.nf`**: Processes for structural variant calling (e.g., using Sniffles).
-- **`methylation.nf`**: Processes for methylation analysis (e.g., using Nanopolish).
+For Linux, the installation might look like:
+```bash
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+For other systems, please refer to the Docker installation guide above.
 
-Each `.nf` file contains one or more processes, and these processes are used in the `main.nf` to create the final pipeline.
+# **3. Build Docker Image**
+This project comes with a Dockerfile that encapsulates all the dependencies required to run the Nextflow pipeline.
+To build the Docker image:
+```bash
+docker build -t bio-pipeline .
+```
+This will create a Docker image named bio-pipeline containing the necessary environment and tools.
+
+
+## **Running the Pipeline**
+# **1. With Docker**
+You can run the pipeline inside the Docker container, which ensures all dependencies are installed and configured properly.
+**Run the Docker container:**
+```bash
+docker build -t bio-pipeline .
+```
+Replace /path/to/your/data with the actual path where your data files are stored on your host system. This will mount the data directory inside the container at /app/data.
+
+# **Access the container interactively (optional)**
+**If you need to run commands interactively inside the container:**
+```bash
+docker run -it -v /path/to/your/data:/app/data bio-pipeline /bin/bash
+```
+This will give you a shell prompt inside the container where you can manually execute commands if needed.
+
+# **2. Without Docker**
+If you don't want to use Docker, you can manually install all dependencies in your environment, but using Docker simplifies this process.
+**Install dependencies manually:**
+- Nextflow: Install via Nextflow installation guide.
+- Conda: Install Conda via the Conda website.
+- Other dependencies: Install FastQC, BWA, Samtools, Minimap2, Sniffles, Mosdepth, NanoPlot, and others from either Conda or the appropriate package manager for your OS.
+
+**Run the pipeline:**
+After installing dependencies, you can run the pipeline with:
+```bash
+nextflow run main.nf
+```
+
 
 ## **Required Input Files**
-
 The following input files should be provided:
 
 1. **FASTQ Files**: These can be in any directory, but must be named `.fastq.gz` or `.fq.gz`.
@@ -37,20 +89,12 @@ The following input files should be provided:
 4. **Non-Target BED File**: A BED file specifying the non-target regions (complement of the target).
 5. **Sequencing Summary**: A file containing sequencing run statistics used for QC with NanoPlot.
 
-## **Usage**
 
-To run the pipeline, you need to have **Nextflow** installed. You can install it from [Nextflow’s website](https://www.nextflow.io/).
+## **Output Files**
+The following files are outputted:
 
-### **1. Clone the Repository**
-
-```bash
-git clone https://github.com/yourusername/nextflow-wgs-adaptive-sampling-pipeline.git
-cd nextflow-wgs-adaptive-sampling-pipeline 
-```
-
-## **2. Install Nextflow**
-If you don't have Nextflow installed, you can install it with the following commands:
-
-```bash
-curl -s https://get.nextflow.io | bash
-```
+1. **Mapped BAM File**: The aligned reads in BAM format (`mapped.bam`).
+2. **Variant Call VCF**: Structural variants called from the BAM file (`sv_calls.vcf`).
+3. **Subset BAM**: Subsetted BAM file based on target regions (`mapped.bam`).
+3. **Coverage Statistics**:Coverage statistics for target and non-target regions (mosdepth output).
+5. **Methylation Calls**: Methylation analysis results in `*.methylation_calls.txt` format.

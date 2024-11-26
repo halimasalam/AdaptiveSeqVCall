@@ -4,7 +4,15 @@ channels:
   - defaults
 dependencies:
   - nextflow
-  - openjdk=11  
-  - fastqc      
-  - bwa         
-  - samtools    
+  - openjdk=11
+  - fastqc
+  - bwa
+  - samtools
+  - bedtools
+  - minimap2
+  - mosdepth
+  - sniffles
+  - nanopolish
+  - ont-fast5-api
+  - biopython
+

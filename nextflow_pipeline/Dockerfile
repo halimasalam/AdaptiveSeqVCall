@@ -1,22 +1,25 @@
-
 FROM continuumio/miniconda3:latest
 
-# Set working directory 
+# Set working directory
 WORKDIR /app
 
-# Copy the YAML file into the container
+# Copy the environment.yml to the container to create the conda environment
 COPY environment.yml /app/
 
-# Create the Conda environment 
+# Create the Conda environment from the environment.yml
 RUN conda env create -f environment.yml
 
-# Activate the Conda environment
+# Ensure that the bio_pipeline_env environment is activated
+# This ensures that all the following commands will run in the conda environment
 SHELL ["conda", "run", "-n", "bio_pipeline_env", "/bin/bash", "-c"]
 
-# Install Nextflow 
+# Install Nextflow via Conda (nextflow is already included in the environment.yml but installing explicitly for clarity)
 RUN conda install -c conda-forge nextflow
 
-# Set the working directory 
+# Copy the Nextflow pipeline files into the container
+COPY . /app/
+
+# Set the working directory again, just in case we need this for clarity
 WORKDIR /app
 
 # Run Nextflow when the container starts
