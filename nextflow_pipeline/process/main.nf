@@ -1,9 +1,9 @@
 
-include { map_reads,subset_bam } from './mapping.nf'
-include { calculate_coverage } from './coverage.nf'
-include { nanoplot_qc } from './qc.nf'
-include { call_methylation } from './methylation.nf'
-include { call_sv } from './variant_calling.nf'
+include { map_reads,subset_bam } from '.processes/mapping.nf'
+include { calculate_coverage } from '.processes/coverage.nf'
+include { nanoplot_qc } from '.processes/qc.nf'
+include { call_methylation } from '.processes/methylation.nf'
+include { call_sv } from '.processes/variant_calling.nf'
 
 // Step 1: Resolve FASTQ files from input directories
 reads = params.input_dirs
