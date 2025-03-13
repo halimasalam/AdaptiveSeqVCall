@@ -1,5 +1,5 @@
-# **Bioinformatics Project** 
-**A PROJECT ON COMPARISON OF VARIANT CALLING IN NANOPORE ADAPTIVE SAMPLING SEQUENCING TO WHOLE GENOME SEQUENCING (On-going).**
+# **AdaptiveSeqVCall** 
+**A BIOINFORMATICS PROJECT ON COMPARISON OF VARIANT CALLING IN NANOPORE ADAPTIVE SAMPLING SEQUENCING TO WHOLE GENOME SEQUENCING (On-going).**
 
 This project provides a bioinformatics pipeline designed to analyze and compare sequencing data for the NA12878 reference genome using both standard WGS and adaptive sampling. 
 
