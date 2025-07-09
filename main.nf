@@ -19,7 +19,16 @@ include { depth_extraction_mosdepth } from './workflows/compare_variants/depth_e
 include { happy_comparison }           from './workflows/compare_variants/happy_comparison.nf'
 
 
-// Resolve FASTQ 
+
+// Resolve sample sheet path
+def sampleSheetPath = params.samplesheet ?: "sample_sheet.csv"
+
+// Check if the sample sheet exists
+if (!file(sampleSheetPath).exists()) {
+    error "❌ Sample sheet not found at: ${sampleSheetPath}"
+}
+
+
 // Load sample sheet into channel
 samples = Channel
     .fromPath(params.samplesheet ?: "sample_sheet.csv")

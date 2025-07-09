@@ -50,7 +50,7 @@ This pipeline enables comparative analysis of **Nanopore Adaptive Sampling** vs.
 
 The main workflow follows multiple modular stages:
 1. **QC** with NanoPlot from `sequencing_summary.txt`
-2. **Read Mapping** (Minimap2 → BAM)
+2. **Read Mapping** (Minimap2 to BAM)
 3. **Subsetting** BAM files to target/non-target regions
 4. **Coverage Calculation** for each region using mosdepth
 5. **SNV Calling** using Clair3
@@ -102,7 +102,8 @@ docker run -it -v /absolute_path/to/your/data:/app adaptive-seq-pipeline /bin/ba
 ```
 **a. Using Command-Line Parameters:**
 ```bash
-nextflow run main.nf -with-docker \
+nextflow run main.nf \
+  --samplesheet data/sample_sheet.csv \
   --reference_genome data/ref.fa \
   --target_bed data/targets.bed \
   --giab_bed data/giab_truth_set.bed \
@@ -198,6 +199,7 @@ S4,AS_SUP,data/AS_SUP/reads_1.fastq,data/AS_SUP/sequencing_summary.txt
 To avoid specifying many parameters manually, define a `params.yaml` file in `config/` like:
 
 ```yaml
+samplesheet: "data/sample_sheet.csv"
 reference_genome: "data/GRCh38.p14.fna"
 target_bed: "data/targets.bed"
 non_target_bed_file: "data/non_targets.bed"
