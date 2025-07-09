@@ -1,0 +1,3 @@
+filename	read_id	ch	start_time	duration_template	template_start	template_duration	num_events_template	template_sequence_length
+reads_1.fastq	0001	1	0.1	1.2	0.1	1.2	1500	500
+reads_2.fastq	0004	3	0.7	1.3	0.7	1.3	1700	580

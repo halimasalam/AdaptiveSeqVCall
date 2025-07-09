@@ -1,0 +1,15 @@
+process happy_comparison {
+    input:
+    path giab_vcf
+    path clair_vcf
+    path bed_file
+    path reference
+
+    output:
+    path "hap.py_sac.*"
+
+    script:
+    """
+    hap.py ${giab_vcf} ${clair_vcf} -f ${bed_file} -o hap.py_sac -r ${reference}
+    """
+}

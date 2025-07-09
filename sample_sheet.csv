@@ -1,0 +1,5 @@
+sample_id,sample_type,input_paths,summary_path
+S1,WGS_SUP,data/WGS_SUP/reads_1.fastq;data/WGS_SUP/reads_2.fastq,data/WGS_SUP/sequencing_summary.txt
+S2,WGS_HAC,data/WGS_HAC/reads_1.fastq;data/WGS_HAC/reads_2.fastq,data/WGS_HAC/sequencing_summary.txt
+S3,AS_HAC,data/AS_HAC/reads_1.fastq;data/AS_HAC/reads_2.fastq,data/AS_HAC/sequencing_summary.txt
+S4,AS_SUP,data/AS_SUP/reads_1.fastq;data/AS_SUP/reads_2.fastq,data/AS_SUP/sequencing_summary.txt
