@@ -1,9 +1,9 @@
 # **AdaptiveSeqVCall**  
 **A Bioinformatics Pipeline for Comparative Variant Analysis in Nanopore Adaptive Sampling and Whole Genome Sequencing (WGS)**  
 
+This project evaluates the performance of Oxford Nanopore's **adaptive sampling** technique for targeted enrichment of 678 COSMIC cancer panel genes, compared to standard whole genome sequencing (WGS - *NA12878* reference genome). The pipeline supports **variant detection (SNVs, SVs)**, **CpG methylation calling**, and **haplotype phasing**, and is implemented using **Nextflow** which can be run inside a Docker for portability and reproducibility across systems container.
 
-This project provides a modular bioinformatics pipeline designed to analyze and compare **Oxford Nanopore Adaptive Sampling** and **Whole Genome Sequencing (WGS)** datasets for the *NA12878* reference genome.The pipeline is implemented using **Nextflow** and can be run inside a Docker to portability and reproducibility across systems container. 
-The pipeline automates preprocessing, alignment, variant calling (SNVs and SVs), methylation profiling, and comparative benchmarking.
+Through selective enrichment for regions of interest in real-time, adaptive sampling has the potential to reduce sequencing costs and turnaround times for clinical genomics.
 
 Modules are defined in separate `.nf` files and composed in `main.nf` for execution.
 
