@@ -26,26 +26,6 @@ Modules are defined in separate `.nf` files and composed in `main.nf` for execut
 
 ---
 
-## Project Overview
-
-This pipeline enables comparative analysis of **Nanopore Adaptive Sampling** vs. **Whole Genome Sequencing** for NA12878. It performs:
-
-- **Quality Control** using NanoPlot  
-- **Read Mapping** with Minimap2  
-- **Targeted/Non-targeted Subsetting** of BAMs using BedTools and samtools  
-- **Coverage Analysis** using Mosdepth  
-- **Variant Calling**
-  - SNVs & Indels using **Clair3**
-  - Structural Variants (SVs) using **Sniffles** and **CuteSV**
-- **Methylation Extraction** using modbam2bed  
-- **Phasing and Tagging** using **LongPhase**  
-- **Variant Annotation**
-  - SNVs via **Annovar**
-  - SVs via **SvAnna**
-- **Comparison with GIAB** using **bcftools isec**, **hap.py**, and **mosdepth**-based depth profiling
-
----
-
 ## Pipeline Workflow
 
 The main workflow follows multiple modular stages:
